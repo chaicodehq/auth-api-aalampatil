@@ -18,6 +18,33 @@ import { verifyToken } from '../utils/jwt.js';
 export async function authenticate(req, res, next) {
   try {
     // Your code here
+    const header = req.headers.authorization;
+    console.log("h", header)
+    if (!header) {
+      return res.status(401).json({ error: { message: "No token provided" } })
+    }
+    if (!header.startsWith("Bearer ")) {
+      return res.status(401).json({ error: { message: "Invalid token" } })
+    }
+
+    const token = header.split(" ")[1]
+    console.log(token)
+    try {
+      const decoded = verifyToken(token)
+      console.log("decode", decoded)
+      const user = await User.findById(decoded.userId);
+
+      if (!user) {
+        return res.status(401).json({ error: { message: "Invalid token" } });
+      }
+      console.log("mid", user)
+      req.user = user
+      next()
+    } catch (error) {
+      return res.status(401).json({ error: { message: "Invalid token" } })
+    }
+
+
   } catch (error) {
     return res.status(401).json({ error: { message: 'Invalid token' } });
   }

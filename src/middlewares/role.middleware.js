@@ -15,5 +15,8 @@
 export function requireRole(...roles) {
   return (req, res, next) => {
     // Your code here
+    if (!req.user) res.status(401).send({ error: { message: "Not authenticated" } })
+    if (!roles.includes(req.user.role) && req.user.role !== "admin") res.status(403).send({ error: { message: "Forbidden" } })
+    next()
   };
 }
